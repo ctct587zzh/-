@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChangTing.wiki</title>
+    <title>ChangTing.wiki - 长亭组织-新西兰北岸</title>
     <style>
         * {
             margin: 0;
@@ -11,98 +11,180 @@
             box-sizing: border-box;
             font-family: "Microsoft YaHei", sans-serif;
         }
+        /* 动态黑白渐变背景 */
         body {
-            background: #121212;
-            color: #fff;
+            background: linear-gradient(-45deg, #ffffff, #f0f0f0, #e8e8e8, #f8f8f8);
+            background-size: 400% 400%;
+            animation: bgWave 12s ease infinite;
+            color: #000000;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 30px 15px;
+            position: relative;
+            overflow-x: hidden;
         }
-        .box {
-            max-width: 700px;
+        @keyframes bgWave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* 整体容器 */
+        .container {
+            max-width: 480px;
             margin: 0 auto;
-            background: #1e1e1e;
-            padding: 50px 35px;
-            border-radius: 20px;
-            box-shadow: 0 0 30px #00a8ff50;
+        }
+        /* 头部标题 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px;
         }
         h1 {
-            text-align: center;
-            font-size: 36px;
-            color: #00a8ff;
-            margin-bottom: 10px;
+            font-size: 34px;
+            color: #000;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
         }
         .desc {
-            text-align: center;
-            color: #aaa;
-            margin-bottom: 40px;
+            color: #666;
+            font-size: 16px;
         }
-        .item {
-            margin: 25px 0;
+        /* 卡片基础样式 - 统一正方形 */
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
         }
+        .card:hover {
+            transform: translateY(-3px);
+        }
+        /* 大正方形 横版 占满整行 */
+        .card-big {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        /* 小正方形 左右并排 */
+        .card-half {
+            width: 48%;
+            aspect-ratio: 1 / 1;
+            float: left;
+        }
+        /* 右侧卡片向右浮动 */
+        .card-half.right {
+            float: right;
+        }
+        /* 清除浮动 */
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        /* 卡片标题 */
         h2 {
             font-size: 20px;
-            margin-bottom: 10px;
-            color: #fff;
+            margin-bottom: 12px;
+            color: #000;
+            border-left: 4px solid #000;
+            padding-left: 10px;
         }
+        /* 正文文字 */
         p {
-            color: #ccc;
-            line-height: 1.7;
+            color: #000;
+            line-height: 1.8;
+            font-size: 15px;
         }
-        .btn {
-            display: block;
+        /* 名单竖排样式 */
+        .name-list {
+            line-height: 2;
+            font-size: 14px;
+        }
+        /* 绿色分割线 */
+        .green-divider {
             width: 100%;
-            text-align: center;
-            padding: 14px;
-            background: #00a8ff;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 12px;
-            margin-top: 15px;
-            font-weight: bold;
+            height: 2px;
+            background-color: #4CAF50;
+            margin: 18px 0;
         }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #666;
-            font-size: 13px;
+        /* 手机端自适应 */
+        @media (max-width: 480px) {
+            .card-half {
+                width: 100%;
+                float: none;
+            }
+            h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h1>欢迎来到长亭</h1>
-        <div class="desc">长亭.wiki</div>
-
-        <div class="item">
-            <h2>关于我</h2>
-            <p>由坠怜在2026.1.10创立涌入了大批的喷系质量青年 他们拥有上进心共创了长亭的盛世 本组织一心隶属于情海旗下及加盟神风</p>
+    <div class="container">
+        <div class="header">
+            <h1>欢迎来到长亭</h1>
+            <div class="desc">十里长亭| 动漫社官方档案</div>
         </div>
 
-        <div class="item">
-            <h2>历代总编 </h2>
-            <p>
-          坠怜 
-          李夜雨 
-          夺命 
-          小雪 
-          南瓜
-          染风
-          痛诉
-          晓梦
-          诗雨
-          
-          
-          <h2>现总编 ：</h2>
-          斐石
-          夺命</p>
+        <!-- 大号正方形卡片 -->
+        <div class="card card-big">
+            <h2>关于我们</h2>
+            <p>本长亭动漫社由坠怜[甄子豪]在2026.1.10创立，汇聚众多二次元优秀爱好者，大家心怀热忱、携手共进，一同打造长亭专属氛围，共创组织盛世，本组织隶属于情海旗下，同时正式加盟神风和华兴会，同心同行，稳步发展。</p>
+            
+            </p>This Changting Anime Club was founded by Zhui Lian (Zhen Zihao) on January 10, 2026. It brings together many outstanding lovers of anime and two-dimensional culture. Everyone works together with enthusiasm to create a unique atmosphere for Changting and build a prosperous community. The club is affiliated with Qinghai, and has officially joined Shenfeng and Huaxinghui. We forge ahead side by side and develop steadily.</p>
         </div>
 
-        <div class="item">
-            <h2>联系我们：</h2>
-            <p>QQ：3658848099</p>
+        <div class="clearfix">
+            <!-- 左侧：版权人+掌权人（绿色分割线分隔） -->
+            <div class="card card-half">
+                <h2>漫画社版权人</h2>
+                <div class="name-list">坠怜[甄子豪]</div>
+                <h2>漫画社掌权人</h2>
+                <div class="name-list">夺命[周子浩]</div>
+                <h2>漫画社历代总编</h2>
+                <div class="name-list">
+                    坠怜<br>
+                    小刀<br>
+                    李夜雨<br>
+                    夺命<br>
+                    小雪<br>
+                    南瓜<br>
+                    染风<br>
+                    痛诉<br>
+                    晓梦<br>
+                    诗雨
+                </div>
+              </div>
+
+        <div class="clearfix">
+            <!-- 左侧：现任总编 + 联系方式 -->
+            <div class="card card-half">
+                <h2>漫画社现任总编</h2>
+                <p>斐石<br>夺命</p>
+                <h2>联系我们</h2>
+                <p>QQ：3658848099[夺命]</p>
+                <p>wx：czq07886[坠怜]</p>
+            </div>
+
+            <!-- 右侧：重要贡献者 -->
+            <div class="card card-half right">
+                <h2>漫画社重要贡献者</h2>
+                <div class="name-list">
+                    晓梦<br>
+                    斐石<br>
+                    陈苒苒<br>
+                    严雨<br>
+                    诗雨<br>
+                    降雪<br>
+                    小雪
+                </div>
+            </div>
         </div>
     </div>
 
-    <footer>© 2026 个人网站 版权所有</footer>
+    <footer style="text-align: center; margin-top: 40px; color: #666; font-size: 13px; clear: both;">© 2026 长亭漫画社版权所有 | 用心守护每一份热爱</footer>
 </body>
 </html>
