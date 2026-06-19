@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长崎动漫社档案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            min-height: 100vh;
+            padding: 70px 0 30px;
+            background-color: #000;
+            overflow-x: hidden;
+        }
+        /* 雪花画布 */
+        #snowCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            background: transparent;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            width: 100%;
+            min-height: calc(100vh - 100px);
+        }
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            filter: blur(3px);
+            transform: scale(0.97);
+        }
+        .page.active {
+            opacity: 1;
+            visibility: visible;
+            filter: blur(0);
+            transform: scale(1);
+        }
+        .page-inner {
+            width: 100%;
+            padding: 0 15px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px 0;
+        }
+        h1 {
+            font-size: 34px;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        .desc {
+            color: #ccc;
+            font-size: 16px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 24px;
+            transition: all 0.6s ease;
+            opacity: 0;
+            transform: translateY(40px);
+            color: #000;
+            border: none;
+            width: 100%;
+        }
+        .card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-half {
+            width: calc(50% - 10px);
+            float: left;
+            margin: 0 5px 24px;
+        }
+        .clearfix::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            border-left: 4px solid #000;
+            padding-left: 10px;
+        }
+        p {
+            line-height: 1.8;
+            font-size: 15px;
+        }
+        .name-list {
+            line-height: 2.2;
+            font-size: 17px;
+        }
+        .join-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 0;
+            background-color: #000;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        /* 顶部全局灵动岛导航 */
+        .dynamic-island {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            border-radius: 999px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            width: 60px;
+            height: 32px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        .dynamic-island.expand {
+            width: 240px;
+            height: 56px;
+        }
+        .island-menu {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 15px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease 0.15s;
+        }
+        .dynamic-island.expand .island-menu {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .island-item {
+            color: #999;
+            font-size: 16px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .island-item.active {
+            color: #fff;
+        }
+        .island-dot {
+            width: 12px;
+            height: 12px;
+            background: #666;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+        .dynamic-island.expand .island-dot {
+            opacity: 0;
+        }
+
+        .member-empty-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 25px;
+            min-height: 420px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: #333;
+            font-size: 16px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.6s ease;
+            border: none;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        .member-empty-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 档案容器，多个档案垂直排列 */
+        .archive-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 30px;
+            align-items: center;
+        }
+
+        /* 档案按钮 24:9 宽屏比例 + 运动模糊 + 弹性动画 */
+        .member-archive {
+            background: #222;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            /* 24:9 宽屏比例：宽 144px / 高 54px */
+            width: 144px;
+            height: 54px;
+            border-radius: 6px;
+            overflow: hidden;
+            transform: translateZ(0);
+            will-change: width, height, border-radius, padding, filter;
+            /* 基础过渡 + 运动模糊联动 */
+            transition: 
+                width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                border-radius 0.4s ease,
+                padding 0.4s ease,
+                filter 0.5s ease;
+            cursor: pointer;
+            /* 初始无模糊 */
+            filter: blur(0);
+        }
+        /* 展开状态 */
+        .member-archive.expand {
+            width: 90%;
+            min-height: 220px;
+            height: auto;
+            border-radius: 18px;
+            padding: 22px;
+        }
+        /* 动画过程添加运动模糊 */
+        .member-archive:active,
+        .member-archive:not(.expand):active,
+        .member-archive.expand:active {
+            filter: blur(2px);
+        }
+        /* 展开/收缩动态运动模糊 */
+        .member-archive.trans-blur {
+            filter: blur(2px);
+        }
+        .archive-min {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+        .archive-detail {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease 0.2s;
+            color: #fff;
+            text-align: left;
+            line-height: 2;
+        }
+        .member-archive.expand .archive-detail {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .archive-detail h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #fff;
+            border-bottom: 1px solid #555;
+            padding-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #999;
+            font-size: 13px;
+            clear: both;
+        }
+        @media (max-width: 480px) {
+            .card-half {
+                width: 100%;
+                float: none;
+            }
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="snowCanvas"></canvas>
+
+    <!-- 顶部全局灵动岛 -->
+    <div class="dynamic-island" id="dynamicIsland">
+        <div class="island-dot"></div>
+        <div class="island-menu">
+            <div class="island-item active" data-target="homePage">主页</div>
+            <div class="island-item" data-target="memberPage">人员</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page active" id="homePage">
+            <div class="page-inner">
+                <div class="header">
+                    <h1>欢迎来到长亭</h1>
+                    <div class="desc">长崎| 动漫社官方档案</div>
+                </div>
+                <div class="card card-big">
+                    <h2>关于我们</h2>
+                    <p>本长崎动漫社由夺命[周子浩]在2026.6.19创立，汇聚众多二次元爱好者，大家携手共进，共创组织盛世，本组织隶属于神风旗下！期待您的到来！</p>
+                    <p>This Nagasaki Anime Club was founded by Duoming [Zhou Zihao] on June 19, 2026. It brings together numerous anime enthusiasts who work hand in hand to build a thriving community. The organization is affiliated with Shenfeng. We look forward to your arrival!</p>
+                </div>
+                <div class="clearfix">
+                    <div class="card card-half">
+                        <h2>漫画社版权人</h2>
+                        <div class="name-list">夺命[周子浩]</div>
+                        <h2>漫画社掌权人</h2>
+                        <div class="name-list">夺命[周子浩]</div>
+                        <h2>漫画社历代总编</h2>
+                        <div class="name-list">
+                            夺命<br>晓梦<br>雨的<br>坠怜<br>李夜雨<br>诗雨<br>南海<br>李棠伊<br>天才<br>难哄
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <div class="card card-half">
+                        <h2>漫画社现任总编</h2>
+                        <p>晓梦<br>夺命</p>
+                        <h2>联系我们</h2>
+                        <p>QQ：3658848099[夺命]</p>
+                        <div class="btn-wrap">
+                            <a href="https://qun.qq.com/universal-share/share?ac=1&authKey=Tar522mNSyxYjNw0nVfoOehgOUp4AJ8jWTUsg3CVrKhpdvmroVlt5xzPiFk02TCR&busi_data=eyJncm91cENvZGUiOiI5MTYxNTU0NTYiLCJ0b2tlbiI6ImluT3dNdUt3d2psajB4RGVvSU16alorWGRhTVpWUVdDSUJTb2d3QXB5YUlkTHJXY1l0VGFySWlqampva3VjNTkiLCJ1aW4iOiIzNjU4ODQ4MDk5In0%3D&data=pG-8gozQ3KwlgvWzaXmlr9MHncCjNwqiyXo8ieII506fg4xwUOCj2qQvnX82CjpWfk998ux4bUYMk--DC84UOw&svctype=4&tempid=h5_group_info" target="_blank" class="join-btn">加入长崎动漫社</a>
+                        </div>
+                    </div>
+                    <div class="card card-half right">
+                        <h2>漫画社重要贡献者</h2>
+                        <div class="name-list">晓梦<br>斐石<br>陈苒苒<br>严雨<br>诗雨<br>降雪<br>小雪</div>
+                    </div>
+                </div>
+                <footer>© 2026 长崎漫画社版权所有 | 用心守护每一份热爱</footer>
+            </div>
+        </div>
+
+        <div class="page" id="memberPage">
+            <div class="page-inner">
+                <div class="header">
+                    <h1>人员列表</h1>
+                    <div class="desc">社团成员档案</div>
+                </div>
+                <div class="member-empty-card">
+                    <h2>漫画社成员</h2>
+                    <!-- 多个档案统一容器 -->
+                    <div class="archive-wrap">
+                        <!-- 高层：雨的 -->
+                        <div class="member-archive" id="archiveYuDe">
+                            <div class="archive-min">高层：雨的</div>
+                            <div class="archive-detail">
+                                <h3>个人资历档案</h3>
+                                <p>职位：社团高层管理人员</p>
+                                <p>入社时间：2026年6.19</p>
+                                <p>负责带活跃和处理组织内人际矛盾</p>
+                                <p>个人简介：资深PX三次元爱好者，陪伴社团成长，处事稳重，积极参与社团各项事务，为社团发展提供助力</p>
+                                <p>荣誉标签：核心成员、资深管理层</p>
+                            </div>
+                        </div>
+
+                        <!-- 高层：陈苒苒 -->
+                        <div class="member-archive" id="archiveChenRanran">
+                            <div class="archive-min">现任：晓梦</div>
+                            <div class="archive-detail">
+                                <h3>个人资历档案</h3>
+                                <p>职位：社团高层管理人员</p>
+                                <p>入社时间：2026年6.19</p>
+                                <p>负责板块：文案编辑、社团宣传、收人</p>
+                                <p>个人简介：热爱二次元文化，性格开朗，擅长文案创作与社群氛围打理，积极配合社团各项工作。</p>
+                                <p>荣誉标签：宣传骨干、核心成员</p>
+                            </div>
+                        </div>
+
+                        <!-- 高层：晓梦 -->
+                        <div class="member-archive" id="archiveXiaoMeng">
+                            <div class="archive-min">高层：天才</div>
+                            <div class="archive-detail">
+                                <h3>个人资历档案</h3>
+                                <p>职位：社团高层管理人员</p>
+                                <p>入社时间：2026年6.19</p>
+                                <p>负责板块：内容审核、活动策划、新人引导</p>
+                                <p>个人简介：做事认真负责，熟悉社团规章制度，长期负责新人接待与活动策划，是社团中坚力量。</p>
+                                <p>荣誉标签：元老成员、活动负责人</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 雪花粒子特效
+        const snowCanvas = document.getElementById('snowCanvas');
+        const snowCtx = snowCanvas.getContext('2d');
+        let sw, sh, snowArr = [];
+
+        function resizeSnow() {
+            sw = window.innerWidth;
+            sh = window.innerHeight;
+            snowCanvas.width = sw;
+            snowCanvas.height = sh;
+        }
+        resizeSnow();
+        window.addEventListener('resize', resizeSnow);
+
+        class Snow {
+            constructor() {
+                this.x = Math.random() * sw;
+                this.y = Math.random() * sh - sh;
+                this.r = Math.random() * 2 + 1;
+                this.speedY = Math.random() + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.alpha = Math.random();
+            }
+            draw() {
+                snowCtx.beginPath();
+                snowCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                snowCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                snowCtx.fill();
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                if (this.y > sh) {
+                    this.y = -10;
+                    this.x = Math.random() * sw;
+                }
+                this.draw();
+            }
+        }
+
+        function initSnow() {
+            snowArr = [];
+            for (let i = 150; i > 0; i--) {
+                snowArr.push(new Snow());
+            }
+        }
+
+        function renderSnow() {
+            snowCtx.clearRect(0, 0, sw, sh);
+            snowArr.forEach(item => item.update());
+            requestAnimationFrame(renderSnow);
+        }
+
+        window.onload = function(){
+            initSnow();
+            renderSnow();
+        };
+
+        // 卡片入场动画
+        const cards = document.querySelectorAll('.card, .member-empty-card');
+        function checkCard() {
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const winH = window.innerHeight;
+                if (rect.top < winH * 0.8) card.classList.add('show');
+            });
+        }
+        document.addEventListener('DOMContentLoaded', checkCard);
+        window.addEventListener('scroll', checkCard);
+
+        // 顶部灵动岛交互
+        const dynamicIsland = document.getElementById('dynamicIsland');
+        const islandItems = document.querySelectorAll('.island-item');
+        const allPages = document.querySelectorAll('.page');
+        let isExpand = false;
+
+        dynamicIsland.addEventListener('click', function(e) {
+            if (e.target.classList.contains('island-item')) return;
+            isExpand = !isExpand;
+            isExpand ? this.classList.add('expand') : this.classList.remove('expand');
+        });
+
+        islandItems.forEach(item => {
+            item.addEventListener('click', function () {
+                islandItems.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+
+                const targetId = this.dataset.target;
+                const targetPage = document.getElementById(targetId);
+                allPages.forEach(p => p.classList.remove('active'));
+                targetPage.classList.add('active');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                dynamicIsland.classList.remove('expand');
+                isExpand = false;
+            });
+        });
+
+        // 通用档案交互函数 + 动态运动模糊
+        function bindArchiveEvent(elemId) {
+            const archive = document.getElementById(elemId);
+            let expand = false;
+            archive.addEventListener('click', function(){
+                // 动画过程添加运动模糊
+                this.classList.add('trans-blur');
+                setTimeout(() => {
+                    this.classList.remove('trans-blur');
+                }, 500);
+
+                expand = !expand;
+                expand ? this.classList.add('expand') : this.classList.remove('expand');
+            });
+        }
+        // 绑定三个档案点击事件
+        bindArchiveEvent('archiveYuDe');
+        bindArchiveEvent('archiveChenRanran');
+        bindArchiveEvent('archiveXiaoMeng');
+    </script>
+</body>
+</html>
